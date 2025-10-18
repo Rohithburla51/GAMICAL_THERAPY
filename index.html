@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RehabQuest - Gamified Physical Therapy</title>
+    <!-- MediaPipe Libraries -->
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js"></script>
+    <!-- Link to your CSS file -->
+    <link rel="stylesheet" href="styles.css">
+    <script>
+        // Dynamic background effect
+        document.addEventListener('mousemove', (e) => {
+            const x = (e.clientX / window.innerWidth) * 100;
+            const y = (e.clientY / window.innerHeight) * 100;
+            document.documentElement.style.setProperty('--mouse-x', x + '%');
+            document.documentElement.style.setProperty('--mouse-y', y + '%');
+        });
+        // Create floating particles
+        function createParticles() {
+            const particlesContainer = document.createElement('div');
+            particlesContainer.className = 'particles-container';
+            document.body.appendChild(particlesContainer);
+
+            for (let i = 0; i < 50; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'particle';
+                particle.style.width = Math.random() * 10 + 'px';
+                particle.style.height = particle.style.width;
+                particle.style.left = Math.random() * 100 + 'vw';
+                particle.style.top = Math.random() * 100 + 'vh';
+                particle.style.animationDuration = (Math.random() * 20 + 10) + 's';
+                particle.style.animationDelay = -Math.random() * 20 + 's';
+                particlesContainer.appendChild(particle);
+            }
+        }
+        // Initialize particles when the page loads
+        window.addEventListener('load', createParticles);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1 class="animated-title">
+                <span class="letter">🎮</span>
+                <span class="letter">G</span>
+                <span class="letter">A</span>
+                <span class="letter">M</span>
+                <span class="letter">I</span>
+                <span class="letter">C</span>
+                <span class="letter">A</span>
+                <span class="letter">L</span>
+                <span class="letter"> </span>
+                <span class="letter">T</span>
+                <span class="letter">H</span>
+                <span class="letter">E</span>
+                <span class="letter">R</span>
+                <span class="letter">A</span>
+                <span class="letter">P</span>
+                <span class="letter">Y</span>
+            </h1>
+            <p class="tagline">Make Physical Therapy Fun & Engaging!</p>
+        </header>
+        <button class="guide-btn" onclick="openGuide()">📖 View Exercise Guide</button>
+        <div class="main-content">
+            <div class="video-section">
+                <div class="character-selector">
+                    <h3>🎭 Choose Your Character:</h3>
+                    <button class="char-btn active" onclick="selectCharacter('spiderman')">🕷️ Spider-Man</button>
+                    <button class="char-btn" onclick="selectCharacter('bheem')">💪 Chotta Bheem</button>
+                    <button class="char-btn" onclick="selectCharacter('doraemon')">🤖 Doraemon</button>
+                    <button class="char-btn" onclick="selectCharacter('superhero')">🦸 Super Kid</button>
+                    <button class="char-btn" onclick="selectCharacter('none')">👤 No Character</button>
+                </div>
+                <div class="video-container">
+                    <video id="webcam" autoplay playsinline></video>
+                    <canvas id="canvas"></canvas>
+                </div>
+                
+                <div class="instructions">
+                    <h3 style="margin-bottom: 15px;">📋 How to Play:</h3>
+                    <div class="instruction-step">
+                        <div class="step-number">1</div>
+                        <span>Choose an exercise from the right panel</span>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">2</div>
+                        <span>Allow camera access when prompted</span>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">3</div>
+                        <span>Follow the guide and match the pose</span>
+                    </div>
+                    <div class="instruction-step">
+                        <div class="step-number">4</div>
+                        <span>Hold the pose to score points!</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="stats-panel">
+                <div class="score-display">
+                    <div class="score-label">Total Score</div>
+                    <div class="score-value" id="score">0</div>
+                </div>
+                
+                <div class="exercise-selector">
+                    <h3 style="margin-bottom: 15px;">Select Exercise:</h3>
+                    <button class="exercise-btn active" onclick="selectExercise('wrist')">
+                        🤚 Arm Exercise
+                    </button>
+                    <button class="exercise-btn" onclick="selectExercise('ankle')">
+                        🦶 Leg Stretch
+                    </button>
+                </div>
+                <div class="accuracy-bar">
+                    <div class="accuracy-fill" id="accuracyBar" style="width: 0%;">
+                        <span id="accuracyText">0%</span>
+                    </div>
+                </div>
+                
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-label">Reps</div>
+                        <div class="stat-value" id="reps">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Streak</div>
+                        <div class="stat-value" id="streak">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Best</div>
+                        <div class="stat-value" id="bestScore">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Level</div>
+                        <div class="stat-value" id="level">1</div>
+                    </div>
+                </div>
+                
+                <div class="motivation" id="motivation">
+                    🎯 Ready to start your therapy journey!
+                </div>
+                
+                <button class="start-btn" onclick="startExercise()">Start Exercise</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Exercise Guide Modal -->
+    <div id="guideModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn" onclick="closeGuide()">&times;</span>
+            <h2>🎯 Exercise Guide & Pose Detection</h2>
+            
+            <div class="guide-exercise">
+                <h3>🤚 Elbow to Shoulder - What AI Checks:</h3>
+                <div class="guide-image">💪</div>
+                <ul class="guide-checklist">
+                    <li>✅ Elbow is bent (up to 100 degrees)</li>
+                    <li>✅ Elbow is raised towards the shoulder</li>
+                    <li>✅ Closer the elbow to the shoulder, higher the score!</li>
+                </ul>
+                <p class="guide-tip">💡 Bend your elbow and bring it up close to your shoulder. You can do one arm or both!</p>
+            </div>
+
+            <div class="guide-exercise">
+                <h3>🦶 Seated Leg Stretch - What AI Checks:</h3>
+                <div class="guide-image">🦵</div>
+                <ul class="guide-checklist">
+                    <li>✅ Sit upright with shoulders above hips</li>
+                    <li>✅ Extend one or both knees to straighten your leg</li>
+                    <li>✅ Leg forms a straight line from hip to ankle</li>
+                    <li>✅ Raise the leg slightly for maximum points</li>
+                </ul>
+                <p class="guide-tip">💡 Sit down and straighten out one or both of your legs! Raise them slightly for bonus points.</p>
+            </div>
+
+            <div class="guide-scoring">
+                <h3>🎮 How to Score Points:</h3>
+                <p>• 76-99% accuracy: +1 point (hold briefly)</p>
+                <p>• 100% accuracy: +2 points (hold for 2-3 seconds)</p>
+                <p>• Build your streak for confetti celebration!</p>
+            </div>
+        </div>
+    </div>
+
+    <div id="confetti-container"></div>
+    <!-- Demo Video Popup -->
+    <div id="demoPopup" class="demo-popup" aria-hidden="true">
+        <div class="demo-header">
+            <div class="demo-title" id="demoTitle">Exercise Demo</div>
+            <button class="demo-close" id="demoClose" aria-label="Close demo">✕</button>
+        </div>
+        <video id="demoVideo" class="demo-video" playsinline muted loop></video>
+    </div>
+    
+    <!-- Link to your JavaScript file -->
+    <script src="script.js"></script>
+</body>
+</html>
